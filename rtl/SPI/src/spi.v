@@ -15,22 +15,22 @@
 
 module spi (
     input  wire       clk,                          // system clock
-    input  wire       en,                           // enable communication
+    input  wire       req,                          // request to send byte
 
     input  wire [7:0] dat,                          // byte to send
 
     output reg        sclk = 1'b0,                  // serial clock
     output wire       sdo,                          // serial data out
 
-    output wire       done                          // high when full byte has been sent
+    output wire       snt                           // high when full byte has been sent
 );
 
 /* --- clock --- */
 
 // clock divider to half system clock
 always @ (posedge clk) begin
-    if (!en) sclk <= 1'b0;                          // enable acts as synchronous active low reset
-    else     sclk <= ~sclk;
+    if (fsm != `ST_RUN) sclk <= 1'b0;               // serial clock only operates in RUN state
+    else                sclk <= ~sclk;
 end
 
 /* --- clock --- */
@@ -40,8 +40,8 @@ end
 reg [2:0] scnt  = 3'h0;                             // data shift count
 reg [7:0] dat_r = 8'h0;                             // data register to be shifted out
 
-assign sdo  = dat_r[7];                             // sdo is MSB of dat_r (shifted left)
-assign done = (fsm == `ST_END);                     // set done high when full byte sent
+assign sdo = dat_r[7];                              // sdo is MSB of dat_r (shifted left)
+assign snt = (fsm == `ST_END);                      // set high when full byte sent
 
 always @ (posedge clk) begin
     if (fsm == `ST_IDL) begin
@@ -61,19 +61,21 @@ reg [1:0] fsm = `ST_IDL;                            // current state
 reg [1:0] fsm_d;                                    // next state
 
 // state assignment
-always @ (posedge clk) fsm <= fsm_d;
+always @ (posedge clk)
+    if (~sclk) fsm <= fsm_d;
 
 // combinatorial state change logic
 always @ (*) begin
     case (fsm)
         `ST_IDL:
-            if (en) fsm_d = `ST_RUN;                // begin running when enabled
-            else    fsm_d = `ST_IDL;                // stay in idle if not enabled
+            if (req) fsm_d = `ST_RUN;               // begin running when request issued
+            else     fsm_d = `ST_IDL;               // stay in idle if no request
         `ST_RUN:
             if (&scnt) fsm_d = `ST_END;             // if full byte sent, finish
             else       fsm_d = `ST_RUN;             // stay running if not yet sent
         `ST_END:
-            fsm_d = `ST_IDL;                        // back to idle after finish
+            if (~req) fsm_d = `ST_IDL;              // back to idle after finish
+            else      fsm_d = `ST_END;              // stay in end until request is pulled low
         default:
             fsm_d = `ST_IDL;                        // send to idle in case of invalid state
     endcase
