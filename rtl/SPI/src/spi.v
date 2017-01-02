@@ -20,6 +20,7 @@ module spi (
     input  wire [7:0] dat,                          // byte to send
 
     output reg        sclk = 1'b0,                  // serial clock
+    output reg        ss   = 1'b1,                  // slave select
     output wire       sdo,                          // serial data out
 
     output wire       snt                           // high when full byte has been sent
@@ -42,6 +43,11 @@ reg [7:0] dat_r = 8'h0;                             // data register to be shift
 
 assign sdo = dat_r[7];                              // sdo is MSB of dat_r (shifted left)
 assign snt = (fsm == `ST_END);                      // set high when full byte sent
+
+always @ (posedge clk) begin
+    if (fsm_d == `ST_RUN || fsm == `ST_RUN) ss <= 1'b0;
+    else    ss <= 1'b1;
+end
 
 always @ (posedge clk) begin
     if (fsm == `ST_IDL) begin

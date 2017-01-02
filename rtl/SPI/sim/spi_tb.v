@@ -15,6 +15,7 @@ reg [7:0] dat = 8'h00;
 
 // output signals
 wire      sclk;
+wire      ss;
 wire      sdo;
 wire      snt;
 
@@ -27,6 +28,7 @@ spi spi_test (
     .req  (req ),
     .dat  (dat ),
     .sclk (sclk),
+    .ss   (ss  ),
     .sdo  (sdo ),
     .snt  (snt )
 );

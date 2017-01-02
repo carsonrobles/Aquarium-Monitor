@@ -13,6 +13,7 @@ module sseg_driver (
     input  wire [31:0] dat,                         // 32 bits to be displayed
 
     output wire        sclk,                        // serial clock
+    output wire        ss,                          // slave select
     output wire        sdo                          // serial data out
 );
 
@@ -27,9 +28,14 @@ spi spi_sseg (
     .req  (req ),
     .dat  (snd ),
     .sclk (sclk),
+    .ss   (ss  ),
     .sdo  (sdo ),
     .snt  (snt )
 );
+
+always @ (posedge clk) begin
+    
+end
 
 endmodule
 
