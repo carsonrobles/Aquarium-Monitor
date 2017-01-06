@@ -6,7 +6,7 @@
  * test bench for sseg driver
  */
 
-module sseg_driver_tb;
+module sseg_drv_tb;
 
 reg        clk =  1'b0;
 reg [63:0] seg = 64'h0;;

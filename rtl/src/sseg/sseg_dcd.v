@@ -7,15 +7,15 @@
  */
 
 module sseg_dcd (
-    input  wire [31:0] dat,
-    output reg  [63:0] seg
+    input  wire [31:0] dat,                             // 32 bit number to be displayed
+    output reg  [63:0] seg                              // corresponding segments to light up
 );
 
 genvar g;
 
-generate for (g = 0; g < 8; g = g + 1) begin : digit
+generate for (g = 0; g < 8; g = g + 1) begin : digit    // generate this for all 8 digits
     always @ (*) begin
-        case (dat[g*4+:4])
+        case (dat[g*4+:4])                              // converts 4 bit number to 8 segments
             4'h0:    seg[g*8+:8] = 8'h7e;
             4'h1:    seg[g*8+:8] = 8'h30;
             4'h2:    seg[g*8+:8] = 8'h6d;
