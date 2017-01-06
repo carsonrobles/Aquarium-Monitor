@@ -20,8 +20,10 @@ module pkt_snd (
     input  wire [15:0] pkt,                             // 16 bit packet to be sent
 
     output wire        sclk,                            // serial clock
-    output wire        load,                            // load latch
-    output wire        sdo                              // serial data out
+    output reg         load = 1'b1,                     // data latch
+    output wire        sdo,                             // serial data out
+
+    output wire        psnt                             // high when full packet sent
 );
 
 reg       req = 1'b0;                                   // request data send
@@ -46,6 +48,8 @@ spi spi_sseg (
 reg [7:0] addr = 8'h0;                                  // address portion of packet
 reg [7:0] cont = 8'h0;                                  // content portion of packet
 
+assign psnt = (fsm == `ST_END);                         // drives psnt high when sending is done
+
 always @ (posedge clk) begin
     if (fsm == `ST_IDL) begin
         addr <= pkt[15:8];                              // latch address portion of packet
@@ -58,6 +62,13 @@ always @ (posedge clk) begin
     else if (fsm_d == `ST_DAT) snd <= cont;             // in data state send content
 end
 
+always @ (posedge clk) begin
+    if (fsm_d == `ST_ADR || fsm_d == `ST_DAT)           // if sending data, pull load low
+        load <= 1'b0;
+    else                                                // else high to latch data
+        load <= 1'b1;
+end
+
 /* --- PKT LOGIC --- */
 
 /* --- REQUEST LOGIC --- */
@@ -65,8 +76,7 @@ end
 always @ (posedge clk) begin
     if (fsm == `ST_ADR || fsm == `ST_DAT) begin
         if (req & snt)       req <= 1'b0;               // if req & snt, end current request
-        //else if (~req & snt) req <= 1'b1;               // if ~req & snt, submit new request
-        else                 req <= 1'b1;
+        else                 req <= 1'b1;               // submit new request
     end
 end
 
@@ -87,10 +97,10 @@ always @ (*) begin
             if (preq) fsm_d = `ST_ADR;                  // switch to send addr on request
             else      fsm_d = `ST_IDL;
         `ST_ADR:
-            if (req & snt) fsm_d = `ST_DAT;             // switch to send data on first done state
+            if (req & snt) fsm_d = `ST_DAT;             // switch to send data after first byte
             else           fsm_d = `ST_ADR;
         `ST_DAT:
-            if (req & snt) fsm_d = `ST_END;             // finish upon final done state
+            if (req & snt) fsm_d = `ST_END;             // finish upon final byte sent
             else           fsm_d = `ST_DAT;
         `ST_END:
             if (~preq) fsm_d = `ST_IDL;                 // switch to idle when request is low

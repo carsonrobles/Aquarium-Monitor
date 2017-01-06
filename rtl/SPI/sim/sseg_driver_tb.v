@@ -1,31 +1,33 @@
 
 /*
  * Carson Robles
- * Jan 1, 2017
+ * Jan 2, 2017
  *
  * test bench for sseg driver
  */
 
 module sseg_driver_tb;
 
-reg        clk;
-reg [31:0] dat;
+reg        clk =  1'b0;
+reg [63:0] seg = 64'h0;;
 
 wire sclk;
-wire ss;
+wire load;
 wire sdo;
 
 sseg_driver sseg_sim (
     .clk  (clk ),
-    .dat  (dat ),
+    .seg  (seg ),
     .sclk (sclk),
-    .ss   (ss  ),
+    .load (load),
     .sdo  (sdo )
 );
 
 always #5 clk <= ~clk;
 
-
+initial begin
+    seg = 64'h0;
+end
 
 endmodule
 

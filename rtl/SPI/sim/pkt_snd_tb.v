@@ -8,6 +8,7 @@ reg [15:0] pkt  = 16'h0;;
 wire sclk;
 wire load;
 wire sdo;
+wire psnt;
 
 pkt_snd sender (
     .clk  (clk ),
@@ -15,7 +16,8 @@ pkt_snd sender (
     .pkt  (pkt ),
     .sclk (sclk),
     .load (load),
-    .sdo  (sdo )
+    .sdo  (sdo ),
+    .psnt (psnt)
 );
 
 always #5 clk <= ~clk;
