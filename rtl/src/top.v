@@ -1,21 +1,44 @@
 
 module top (
-    input  wire clk,
-    input  wire rst,
+    input  wire       clk,
+    input  wire       rst,
 
-    input  wire btn_u,
-    input  wire btn_d,
+    input  wire       btn_u,
+    input  wire       btn_d,
 
-    output wire sclk,
-    output wire load,
-    output wire sdo
+    output wire [2:0] rgb,
+
+    output wire       sclk,
+    output wire       load,
+    output wire       sdo
 );
 
-reg  [31:0] dat = 32'h0;
+rgb_drv rgb_d (
+    .clk   (clk ),
+    .rst_n (~rst),
+    .rgb   (rgb )
+);
+
+reg  [15:0] dat = 16'h0;
+reg  [15:0] psh = 16'h0;
 wire [63:0] seg;
 
+wire [31:0] snd = {dat, psh};
+
+reg [15:0] cnt = 16'h0;
+
+always @ (posedge clk or posedge rst) begin
+    if (rst) cnt <= 16'h0;
+    else     cnt <= cnt + 16'h1;
+end
+
+always @ (posedge clk or posedge rst) begin
+    if (rst)       dat <= 16'h0;
+    else if (&cnt) dat <= dat + 16'h1;
+end
+
 sseg_dcd dcd (
-    .dat (dat),
+    .dat (snd),
     .seg (seg)
 );
 
@@ -38,13 +61,13 @@ reg  [1:0] bd_sft = 2'h0;
 
 sig_deb deb_u (
     .clk   (clk    ),
-    .sig_i (~btn_u  ),
+    .sig_i (~btn_u ),
     .sig_o (btn_u_d)
 );
 
 sig_deb deb_d (
     .clk   (clk    ),
-    .sig_i (~btn_d  ),
+    .sig_i (~btn_d ),
     .sig_o (btn_d_d)
 );
 
@@ -59,10 +82,10 @@ always @ (posedge clk or posedge rst) begin
 end
 
 always @ (posedge clk or posedge rst) begin
-    if (rst) dat <= 32'h0;
+    if (rst) psh <= 16'h0;
     else begin
-        if (btn_u_e)      dat <= dat + 32'h1;
-        else if (btn_d_e) dat <= dat - 32'h1;
+        if (btn_u_e)      psh <= psh + 16'h1;
+        else if (btn_d_e) psh <= psh - 16'h1;
     end
 end
 
