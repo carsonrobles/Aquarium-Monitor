@@ -26,12 +26,12 @@ generate for (g = 0; g < 8; g = g + 1) begin : digit    // generate this for all
             4'h7:    seg[g*8+:8] = 8'h70;
             4'h8:    seg[g*8+:8] = 8'h7f;
             4'h9:    seg[g*8+:8] = 8'h7b;
-            4'ha:    seg[g*8+:8] = 8'h77;
+            /*4'ha:    seg[g*8+:8] = 8'h77;
             4'hb:    seg[g*8+:8] = 8'h1f;
-            4'hc:    seg[g*8+:8] = 8'h0d;
+            4'hc:    seg[g*8+:8] = 8'h4e;
             4'hd:    seg[g*8+:8] = 8'h3d;
             4'he:    seg[g*8+:8] = 8'h4f;
-            4'hf:    seg[g*8+:8] = 8'h47;
+            4'hf:    seg[g*8+:8] = 8'h47;*/
             default: seg[g*8+:8] = 8'h0;
         endcase
     end

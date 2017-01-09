@@ -13,42 +13,12 @@ module top (
     output wire       sdo
 );
 
-rgb_drv rgb_d (
-    .clk   (clk ),
-    .rst_n (~rst),
-    .rgb   (rgb )
-);
-
-reg  [15:0] dat = 16'h0;
-reg  [15:0] psh = 16'h0;
-wire [63:0] seg;
-
-wire [31:0] snd = {dat, psh};
-
-reg [15:0] cnt = 16'h0;
+reg [23:0] cnt = 24'h0;
 
 always @ (posedge clk or posedge rst) begin
-    if (rst) cnt <= 16'h0;
-    else     cnt <= cnt + 16'h1;
+    if (rst) cnt <= 24'h0;
+    else     cnt <= cnt + 24'h1;
 end
-
-always @ (posedge clk or posedge rst) begin
-    if (rst)       dat <= 16'h0;
-    else if (&cnt) dat <= dat + 16'h1;
-end
-
-sseg_dcd dcd (
-    .dat (snd),
-    .seg (seg)
-);
-
-sseg_drv drv (
-    .clk  (clk ),
-    .seg  (seg ),
-    .sclk (sclk),
-    .load (load),
-    .sdo  (sdo )
-);
 
 wire btn_u_d;
 wire btn_d_d;
@@ -81,13 +51,58 @@ always @ (posedge clk or posedge rst) begin
     end
 end
 
+reg [7:0] tmp_s = 8'h0;
+reg [7:0] tmp_a = 8'h0;
+
+wire [11:0] bcd_1;
+wire [11:0] bcd_2;
+
+wire [63:0] seg;
+
+sseg_dcd dcd (
+    .dat ({4'hf, bcd_1[7:0], 8'hff, bcd_2[7:0], 4'hf}),
+    .seg (seg)
+);
+
+sseg_drv drv (
+    .clk  (clk ),
+    .seg  (seg ),
+    .sclk (sclk),
+    .load (load),
+    .sdo  (sdo )
+);
+
+bcd b_1 (
+    .number (tmp_s),
+    .hundreds (bcd_1[11:8]),
+    .tens (bcd_1[7:4]),
+    .ones (bcd_1[3:0])
+);
+
+bcd b_2 (
+    .number (tmp_a),
+    .hundreds (bcd_2[11:8]),
+    .tens (bcd_2[7:4]),
+    .ones (bcd_2[3:0])
+);
+
 always @ (posedge clk or posedge rst) begin
-    if (rst) psh <= 16'h0;
+    if (rst) tmp_s <= 8'h0;
     else begin
-        if (btn_u_e)      psh <= psh + 16'h1;
-        else if (btn_d_e) psh <= psh - 16'h1;
+        if (btn_u_e)      tmp_s <= tmp_s + 8'h1;
+        else if (btn_d_e) tmp_s <= tmp_s - 8'h1;
     end
 end
+
+always @ (posedge clk or posedge rst) begin
+    if (rst)                        tmp_a <= 8'h0;
+    else if (&cnt && tmp_a < tmp_s) tmp_a <= tmp_a + 8'h1;
+    else if (&cnt && tmp_a > tmp_s) tmp_a <= tmp_a - 8'h1;
+end
+
+assign rgb[0] = ~(tmp_a < tmp_s);
+assign rgb[1] = ~(tmp_a == tmp_s);
+assign rgb[2] = ~(tmp_a > tmp_s);
 
 endmodule
 

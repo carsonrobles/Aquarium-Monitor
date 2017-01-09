@@ -15,7 +15,7 @@ wire sclk;
 wire load;
 wire sdo;
 
-sseg_driver sseg_sim (
+sseg_drv sseg (
     .clk  (clk ),
     .seg  (seg ),
     .sclk (sclk),
@@ -26,7 +26,7 @@ sseg_driver sseg_sim (
 always #5 clk <= ~clk;
 
 initial begin
-    seg = 64'h0;
+    seg = 64'h1234567890abcdef;
 end
 
 endmodule

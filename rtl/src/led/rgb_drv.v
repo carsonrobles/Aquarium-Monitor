@@ -26,8 +26,8 @@ end
 
 /* --- LED LOGIC --- */
 
-reg [7:0] lvl_g = 8'hffff;                              // green level
-reg [7:0] lvl_b = 8'h0000;                              // blue level
+reg [7:0] lvl_g = 8'hff;                                // green level
+reg [7:0] lvl_b = 8'h00;                                // blue level
 
 assign rgb[0] = 1'b1;
 assign rgb[1] = cnt[23];

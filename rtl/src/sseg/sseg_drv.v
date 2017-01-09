@@ -54,7 +54,7 @@ end
 
 /* --- DATA LATCH --- */
 
-reg [63:0] seg_r;                                       // internal segment register
+reg [63:0] seg_r = 64'h0;                               // internal segment register
 
 always @ (posedge clk) begin
     if (fsm == `ST_GET) seg_r <= seg;                   // latch new set of segs in get state
@@ -89,14 +89,15 @@ always @ (posedge clk) begin
         addr <= 4'h0;
     end else if (fsm == `ST_DIG) begin                  // get corresponding segments for addr
         case (addr)
-            4'h0: cont <= seg_r[ 7: 0];
-            4'h1: cont <= seg_r[15: 8];
-            4'h2: cont <= seg_r[23:16];
-            4'h3: cont <= seg_r[31:24];
-            4'h4: cont <= seg_r[39:32];
-            4'h5: cont <= seg_r[47:40];
-            4'h6: cont <= seg_r[55:48];
-            4'h7: cont <= seg_r[63:56];
+            4'h0:   cont <= seg_r[ 7: 0];
+            4'h1:   cont <= seg_r[15: 8];
+            4'h2:   cont <= seg_r[23:16];
+            4'h3:   cont <= seg_r[31:24];
+            4'h4:   cont <= seg_r[39:32];
+            4'h5:   cont <= seg_r[47:40];
+            4'h6:   cont <= seg_r[55:48];
+            4'h7:   cont <= seg_r[63:56];
+            default cont <= 4'h0;
         endcase
     end else if (fsm == `ST_INC) begin                  // inrement address for next digit
         addr <= addr + 4'h1;
