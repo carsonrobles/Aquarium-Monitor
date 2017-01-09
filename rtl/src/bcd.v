@@ -1,3 +1,5 @@
+// below code taken from deathbylogic.com
+
 module bcd(number, hundreds, tens, ones);
    // I/O Signal Definitions
       input  [7:0] number;
