@@ -1,1 +1,1 @@
-# Verilog SPI Core
+# Seven Segment SPI Interface

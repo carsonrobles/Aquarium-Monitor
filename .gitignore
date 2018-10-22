@@ -9,4 +9,5 @@
 *.str
 vivado*
 .Xil*
+usage_statistics_webtalk.*
 
